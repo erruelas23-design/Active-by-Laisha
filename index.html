@@ -379,30 +379,23 @@ async function iniciarCheckout(btnId){
   const btn = document.getElementById(btnId);
   if(btn){ btn.disabled = true; btn.textContent = 'Cargando…'; }
   try{
-    const { data: { session } } = await sb.auth.getSession();
-    const res = await fetch(`${FN_BASE}/hyper-worker`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
-    });
-    const data = await res.json();
-    if(data.url) window.location.href = data.url;
-    else throw new Error(data.error || 'No se pudo iniciar el pago');
+    const { data, error } = await sb.functions.invoke('hyper-worker', { method: 'POST' });
+    if(error) throw error;
+    if(data && data.url) window.location.href = data.url;
+    else throw new Error((data && data.error) || 'No se pudo iniciar el pago');
   }catch(e){
+    console.error('checkout error', e);
     const err = document.getElementById('paywall-error');
-    if(err) err.textContent = 'No se pudo iniciar el pago. Intenta de nuevo.';
+    if(err) err.textContent = 'No se pudo iniciar el pago: ' + (e.message || 'intenta de nuevo.');
     if(btn){ btn.disabled = false; btn.textContent = 'Suscribirme'; }
   }
 }
 async function abrirPortal(){
   try{
-    const { data: { session } } = await sb.auth.getSession();
-    const res = await fetch(`${FN_BASE}/rapid-task`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
-    });
-    const data = await res.json();
-    if(data.url) window.location.href = data.url;
-  }catch(e){ console.error(e); }
+    const { data, error } = await sb.functions.invoke('rapid-task', { method: 'POST' });
+    if(error) throw error;
+    if(data && data.url) window.location.href = data.url;
+  }catch(e){ console.error('portal error', e); }
 }
 
 /* --- PANTALLA DE ACCESO (login / registro) --- */
