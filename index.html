@@ -379,7 +379,7 @@ async function iniciarCheckout(btnId){
   const btn = document.getElementById(btnId);
   if(btn){ btn.disabled = true; btn.textContent = 'Cargando…'; }
   try{
-    const { data, error } = await sb.functions.invoke('hyper-worker', { method: 'POST' });
+    const { data, error } = await sb.functions.invoke('dynamic-processor', { method: 'POST' });
     if(error) throw error;
     if(data && data.url) window.location.href = data.url;
     else throw new Error((data && data.error) || 'No se pudo iniciar el pago');
@@ -392,7 +392,7 @@ async function iniciarCheckout(btnId){
 }
 async function abrirPortal(){
   try{
-    const { data, error } = await sb.functions.invoke('rapid-task', { method: 'POST' });
+    const { data, error } = await sb.functions.invoke('quick-api', { method: 'POST' });
     if(error) throw error;
     if(data && data.url) window.location.href = data.url;
   }catch(e){ console.error('portal error', e); }
