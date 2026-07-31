@@ -565,7 +565,7 @@ const SPLITS = {
   2: [['fullbody','Full Body A'],['fullbody2','Full Body B']],
   3: [['fullbody','Full Body A'],['fullbody2','Full Body B'],['fullbody3','Full Body C']],
   4: [['upper','Tren superior A'],['lower','Tren inferior A'],['upper2','Tren superior B'],['lower2','Tren inferior B']],
-  5: [['push','Empuje (Push)'],['pull','Tirón (Pull)'],['legs','Pierna'],['upper','Tren superior'],['lower','Tren inferior']],
+  5: [['gluteo_femoral_a','Glúteo y Femoral'],['espalda_hombro','Espalda y Hombro'],['cuadriceps_dia','Cuádriceps'],['hombro_brazo','Hombro, Bícep y Trícep'],['gluteo_femoral_b','Femoral y Glúteo']],
   6: [['push','Empuje A'],['pull','Tirón A'],['legs','Pierna A'],['push2','Empuje B'],['pull2','Tirón B'],['legs2','Pierna B']],
 };
 
@@ -583,6 +583,11 @@ const DAY_MUSCLES = {
   pull2:['espalda','biceps','core'],
   legs:['cuadriceps','isquiotibiales','gluteo','pantorrilla'],
   legs2:['isquiotibiales','cuadriceps','gluteo','pantorrilla'],
+  gluteo_femoral_a:['gluteo','isquiotibiales'],
+  espalda_hombro:['espalda','hombro'],
+  cuadriceps_dia:['cuadriceps'],
+  hombro_brazo:['hombro','biceps','triceps'],
+  gluteo_femoral_b:['isquiotibiales','gluteo'],
 };
 
 const GOAL_PARAMS = {
@@ -595,10 +600,11 @@ const GOAL_LABEL = {fuerza:'Fuerza', hipertrofia:'Hipertrofia', resistencia:'Res
 const LEVEL_EXTRA = {principiante:0, intermedio:1, avanzado:2};
 const DIAS_NOMBRES = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
 
-function pickExercises(musculo, equipoDisponible, cantidad){
+function pickExercises(musculo, equipoDisponible, cantidad, reverse){
   const pool = (EJ[musculo]||[]).filter(e => e.eq.some(eq => equipoDisponible.includes(eq)));
   const base = pool.length ? pool : (EJ[musculo]||[]);
-  return base.slice(0, Math.max(1,cantidad));
+  const ordered = reverse ? base.slice().reverse() : base;
+  return ordered.slice(0, Math.max(1,cantidad));
 }
 
 /* Ajuste por edad: volumen y descansos (peso/estatura ya se usan en IMC/kcal) */
@@ -621,10 +627,11 @@ function generarRutina(profile){
   const descansoEjercicio = scaleRestString(params.descansoEjercicio, edadInfo.restMultiplier);
   const semana = dias.map(([key, label], idx) => {
     const musculos = DAY_MUSCLES[key];
+    const reverseDay = key === 'gluteo_femoral_b';
     let ejercicios = [];
     musculos.forEach((m,i) => {
       const cantidad = params.nEjPorMusculo + (i < 2 ? extra : 0);
-      const picked = pickExercises(m, profile.equipo, cantidad);
+      const picked = pickExercises(m, profile.equipo, cantidad, reverseDay);
       picked.forEach(p => ejercicios.push({
         musculo: m, nombre: p.n, mediaId: EXERCISE_MEDIA[p.n] || null, series: params.series, reps: params.reps,
         descansoSerie, descansoEjercicio
